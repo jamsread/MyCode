@@ -1,0 +1,108 @@
+%Load the wine data , and save it to winedata
+uiimport('wine.data');
+
+wine_label = wine(:, 1);
+wine_data = wine(:, 2:end);
+categories = {'Alcohol'; 'Malic acid'; 'Ash'; 'Alcalinity of ash'; 'Magnesium'; 'Total phenols'; 'Flavanoids'; 'Nonflavanoid phenols'; 'Proanthocyanins'; 'Color intensitys'; 'Hue'; 'OD280/OD315 of diluted wines'; 'Proline'};
+classnumber = 3;
+save winedata.mat;
+
+load winedata;
+%Show the box figure of test data
+figure;
+boxplot(wine_data, 'orientation', 'horizontal', 'labels', categories);
+title('Wine Data Box Figure', 'FontSize',12);
+xlabel('Attribute Value', 'FontSize', 12);
+grid on;
+%Show the fractal dimension figure of test data
+figure
+subplot(3, 5, 1);
+hold on
+for run = 1:178
+  plot(run,wine_label(run), '*');
+end
+xlabel('Sample', 'FontSize', 10);
+ylabel('Label', 'FontSize', 10);
+title('class', 'FontSize', 10);
+for run = 2:14
+  subplot(3, 5, run);
+  hold on;
+  str = ['attrib ', num2str(run-1)];
+  for i = 1:178
+    plot(i, wine(i, run-1), '*');
+  end
+  xlabel('Sample', 'FontSize', 10);
+  ylabel('Attribute Value', 'FontSize', 10);
+  title(str, 'FontSize', 10);
+end
+%Choose train set and test set
+% Select 1-30 of the first cultivar, 60-95 of the second cultivar, and 131-153 of the third cultivar as train set
+
+train_wine_data = [wine_data(1:30, :); wine_data(60:95, :); wine_data(131:153, :)];
+
+% And split the labels
+
+train_wine_labels = [wine_label(1:30); wine_label(60:95); wine_label(131:153)];
+
+% Select 31-59 of the first cultivar, 96-130 of the second cultivar, 154-178 of the thrid cultivar as test set
+
+test_wine_data = [wine_data(31:59, :); wine_data(96:130, :); wine_data(154:178, :)];
+
+% And split the labels
+
+test_wine_labels = [wine_label(31:59); wine_label(96:130); wine_label(154:178)];
+%[0, 1] scaling
+[mtrain,ntrain] = size(train_wine_data);
+[mtest,ntest] = size(test_wine_data);
+
+dataset = [train_wine_data; test_wine_data];
+
+[dataset_scale, ps] = mapminmax(dataset', 0, 1);
+dataset_scale = dataset_scale';
+
+train_wine_data = dataset_scale(1:mtrain, :);
+test_wine_data = dataset_scale((mtrain+1):(mtrain+mtest), :);
+%SVM Train and Predict
+model = svmtrain(train_wine_labels, train_wine_data, '-c 2 -g 1');
+%Predicting
+[predict_label, accuracy, decision_values] = svmpredict(test_wine_labels, test_wine_data, model);
+%Analysis of Result
+% Real and predicted classifications figure of test set
+% The figure shows that only one sample was classified improperly
+
+figure;
+hold on;
+plot(test_wine_labels,'o');
+plot(predict_label,'r*');
+xlabel('Test Set Sample','FontSize',12);
+ylabel('Label','FontSize',12);
+legend('Real','Predicted');
+title('Classifications Figure of Test Set','FontSize',12);
+grid on;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
